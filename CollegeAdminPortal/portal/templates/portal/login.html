@@ -1,0 +1,30 @@
+{% extends 'portal/base.html' %}
+
+{% block auth_content %}
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4>College Admin Login</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <!-- Render form manually for better control or just as_p -->
+                    <div class="mb-3">
+                        <label class="form-label">College ID (Username)</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
