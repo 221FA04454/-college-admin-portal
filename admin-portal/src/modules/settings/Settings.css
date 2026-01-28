@@ -1,0 +1,344 @@
+/* Settings.css */
+:root {
+    --color-primary: #4f46e5;
+    /* Indigo 600 */
+    --color-primary-hover: #4338ca;
+    /* Indigo 700 */
+    --color-dark: #1e293b;
+    /* Slate 800 */
+    --color-dark-hover: #0f172a;
+    /* Slate 900 */
+    --color-warning: #f59e0b;
+    /* Amber 500 */
+    --color-warning-hover: #d97706;
+    /* Amber 600 */
+    --color-danger: #ef4444;
+    /* Red 500 */
+    --color-danger-hover: #dc2626;
+    /* Red 600 */
+    --color-success: #22c55e;
+    /* Green 500 */
+    --settings-bg: #f8fafc;
+    --settings-card-bg: #ffffff;
+    --settings-text-main: #1e293b;
+    --settings-text-muted: #64748b;
+    --settings-border: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --radius: 0.75rem;
+}
+
+/* Layout */
+.settings-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.settings-header {
+    margin-bottom: 2rem;
+}
+
+.settings-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-dark);
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Card Styles */
+.settings-card {
+    background: var(--settings-card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--settings-border);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.card-header {
+    padding: 1.25rem 1.5rem;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.header-indigo {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.header-amber {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.header-red {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.header-slate {
+    background: linear-gradient(135deg, #64748b, #475569);
+}
+
+.header-dark {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+}
+
+.header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-desc {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.card-body {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Form Elements */
+.settings-form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--settings-text-muted);
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--settings-border);
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background: #fff;
+    font-family: inherit;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+}
+
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-indigo {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-indigo:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+}
+
+.btn-dark {
+    background: var(--color-dark);
+    color: white;
+}
+
+.btn-dark:hover:not(:disabled) {
+    background: var(--color-dark-hover);
+}
+
+.btn-amber {
+    background: var(--color-warning);
+    color: white;
+}
+
+.btn-amber:hover:not(:disabled) {
+    background: var(--color-warning-hover);
+}
+
+/* Status Messages */
+.status-msg {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.status-success {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.status-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Toggle Switch */
+.toggle-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.toggle-label {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s;
+    border-radius: 34px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+.toggle-input:checked+.toggle-slider {
+    background-color: var(--color-danger);
+}
+
+.toggle-input:checked+.toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.system-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-maintenance {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.status-active {
+    background: #f0fdf4;
+    color: #166534;
+}
+
+
+/* Audit Table */
+.audit-table-wrapper {
+    overflow-x: auto;
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.audit-table th {
+    background-color: #f8fafc;
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--settings-text-muted);
+    border-bottom: 2px solid var(--settings-border);
+    white-space: nowrap;
+}
+
+.audit-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--settings-border);
+    color: var(--settings-text-main);
+    font-size: 0.95rem;
+}
+
+.audit-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.audit-action {
+    color: #3b82f6;
+    font-weight: 500;
+}
+
+.audit-timestamp {
+    color: var(--settings-text-muted);
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--settings-text-muted);
+    font-style: italic;
+}

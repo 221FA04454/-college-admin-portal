@@ -15,7 +15,12 @@ from .api_views import (
     APIDashboardStatsView,
     APIForceLogoutView,
     APILogoutView,
-    APICreateAdminView
+    APICreateAdminView,
+    APISendHelpEmailView,
+    APIMaintenanceModeView,
+    APIAnnouncementView,
+    APIAuditLogView,
+    APIChangePasswordView
 )
 
 urlpatterns = [
@@ -37,4 +42,9 @@ urlpatterns = [
     path('api/force-logout/', APIForceLogoutView.as_view(), name='api_force_logout'),
     path('api/logout/', APILogoutView.as_view(), name='api_logout'),
     path('api/create-admin/', APICreateAdminView.as_view(), name='api_create_admin'),
+    path('api/send-help-email/', APISendHelpEmailView.as_view(), name='api_send_help_email'),
+    path('api/maintenance-mode/', APIMaintenanceModeView.as_view(), name='api_maintenance_mode'),
+    path('api/announcements/', APIAnnouncementView.as_view(), name='api_announcements'),
+    path('api/audit-logs/', APIAuditLogView.as_view(), name='api_audit_logs'),
+    path('api/change-password/', APIChangePasswordView.as_view(), name='api_change_password'),
 ]

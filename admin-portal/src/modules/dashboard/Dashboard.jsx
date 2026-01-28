@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, School, FileText, TrendingUp, MoreHorizontal } from 'lucide-react';
+import { Users, School, FileText, TrendingUp, MoreHorizontal, Eye, ShieldCheck } from 'lucide-react';
 import { getDashboardStats } from '../../services/api';
 import './Dashboard.css';
 
@@ -48,10 +48,10 @@ const Dashboard = () => {
                     color="#3b82f6"
                 />
                 <StatCard
-                    title="Active Colleges"
-                    value={stats.active_colleges}
-                    change="+4"
-                    icon={<School size={24} />}
+                    title="Total College Views"
+                    value={stats.total_views}
+                    change="+150"
+                    icon={<Eye size={24} />}
                     color="#8b5cf6"
                 />
                 <StatCard
@@ -62,10 +62,10 @@ const Dashboard = () => {
                     color="#10b981"
                 />
                 <StatCard
-                    title="Revenue"
-                    value={stats.revenue}
-                    change="+8%"
-                    icon={<TrendingUp size={24} />}
+                    title="Active Admin Sessions"
+                    value={stats.active_sessions}
+                    change="Online Now"
+                    icon={<ShieldCheck size={24} />}
                     color="#f59e0b"
                 />
             </div>

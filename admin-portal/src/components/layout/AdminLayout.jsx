@@ -17,6 +17,7 @@ import './AdminLayout.css';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
@@ -60,10 +61,7 @@ const AdminLayout = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <button onClick={handleLogout} className="nav-link logout-btn" style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}>
-            <LogOut size={20} />
-            <span>Logout</span>
-          </button>
+          {/* Logout moved to Header Profile Dropdown */}
         </div>
       </aside>
 
@@ -84,10 +82,28 @@ const AdminLayout = () => {
               <Bell size={20} />
               <span className="badge">3</span>
             </button>
-            <div className="user-profile">
+
+            <div className="user-profile" onClick={() => setDropdownOpen(!isDropdownOpen)}>
               <div className="avatar">AD</div>
               <span>Admin User</span>
             </div>
+
+            {isDropdownOpen && (
+              <div className="profile-dropdown">
+                <div className="dropdown-header">
+                  <h4>Admin User</h4>
+                  <span>Super Administrator</span>
+                </div>
+                <Link to="/admin/settings" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                  <Settings size={16} />
+                  Settings
+                </Link>
+                <button onClick={handleLogout} className="dropdown-item danger">
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </header>
 

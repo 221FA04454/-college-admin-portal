@@ -1,118 +1,403 @@
-import React, { useState } from 'react';
-import { Mail, Shield, UserPlus } from 'lucide-react';
-// We'll assume a createAdmin or similar API exists or we'll mock it for now.
-// Since create_admin API exists in backend (accounts/api_views.py) -> APICreateAdminView
+import React, { useState, useEffect } from 'react';
+import { Shield, Send, Megaphone, AlertTriangle, Activity, Key } from 'lucide-react'; // Added icons
+import { sendHelpEmail, getMaintenanceMode, updateMaintenanceMode, getAnnouncement, updateAnnouncement, getAuditLogs, changePassword } from '../../services/api';
 import api from '../../services/api';
+import './Settings.css';
 
-const SettingsComp = () => {
-    const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
+const ChangePasswordForm = () => {
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [status, setStatus] = useState('');
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
 
-    const handleInvite = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setMessage('');
+        setStatus('');
 
+        if (newPassword !== confirmPassword) {
+            setStatus('error: New passwords do not match');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setStatus('error: Password must be at least 6 characters');
+            return;
+        }
+
+        setLoading(true);
         try {
-            await api.post('create-admin/', { username, email });
-            setMessage('Admin invitation sent successfully!');
-            setEmail('');
-            setUsername('');
+            await changePassword(oldPassword, newPassword);
+            setStatus('success: Password changed successfully');
+            setOldPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
         } catch (err) {
-            setMessage(err.response?.data?.error || 'Failed to invite admin.');
+            setStatus(err.response?.data?.error || 'error: Failed to change password');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '2rem' }}>Settings</h1>
-
-            <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', overflow: 'hidden', maxWidth: '600px' }}>
-                <div style={{ background: '#3b82f6', padding: '1.5rem', color: 'white' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                        <Shield size={24} />
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>Create New Admin</h2>
+        <div className="settings-card">
+            <div className="card-header header-dark">
+                <div className="header-title-row">
+                    <Key size={24} />
+                    <h2 className="header-title">Change Password</h2>
+                </div>
+                <p className="header-desc">
+                    Update your account security.
+                </p>
+            </div>
+            <div className="card-body">
+                {status && (
+                    <div className={`status-msg ${status.startsWith('success') ? 'status-success' : 'status-error'}`}>
+                        {status.replace('success: ', '').replace('error: ', '')}
                     </div>
-                    <p style={{ margin: 0, opacity: 0.9, fontSize: '0.95rem' }}>
-                        Create a new admin account. They will receive temporary credentials via email.
+                )}
+                <form onSubmit={handleSubmit} className="settings-form">
+                    <div className="form-group">
+                        <label>Current Password</label>
+                        <input
+                            type="password"
+                            className="form-input"
+                            value={oldPassword}
+                            onChange={(e) => setOldPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>New Password</label>
+                        <input
+                            type="password"
+                            className="form-input"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Confirm New Password</label>
+                        <input
+                            type="password"
+                            className="form-input"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn btn-dark"
+                    >
+                        {loading ? 'Updating...' : 'Update Password'}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const HelpDeskForm = () => {
+    const [subject, setSubject] = useState('');
+    const [message, setMessageBody] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState('');
+
+    const handleSend = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setStatus('');
+
+        try {
+            await sendHelpEmail(subject, message);
+            setStatus('success: Message sent to Super Admin!');
+            setSubject('');
+            setMessageBody('');
+        } catch (err) {
+            setStatus('error: Failed to send message.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div>
+            {status && (
+                <div className={`status-msg ${status.startsWith('success') ? 'status-success' : 'status-error'}`}>
+                    {status.replace('success: ', '').replace('error: ', '')}
+                </div>
+            )}
+            <form onSubmit={handleSend} className="settings-form">
+                <div className="form-group">
+                    <label>Subject</label>
+                    <input
+                        type="text"
+                        className="form-input"
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        required
+                        placeholder="e.g. System Update Request"
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Message</label>
+                    <textarea
+                        className="form-textarea"
+                        value={message}
+                        onChange={(e) => setMessageBody(e.target.value)}
+                        required
+                        rows="4"
+                        placeholder="Describe your query..."
+                    />
+                </div>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn btn-indigo"
+                >
+                    {loading ? 'Sending...' : (
+                        <>
+                            <Send size={20} />
+                            Send Message
+                        </>
+                    )}
+                </button>
+            </form>
+        </div>
+    );
+};
+
+// --- NEW COMPONENT: System Controls ---
+const SystemControls = () => {
+    const [maintenance, setMaintenance] = useState(false);
+    const [announcement, setAnnouncement] = useState('');
+    const [loadingAnnounce, setLoadingAnnounce] = useState(false);
+
+    useEffect(() => {
+        getMaintenanceMode().then(res => setMaintenance(res.data.maintenance_mode));
+        getAnnouncement().then(res => setAnnouncement(res.data.global_announcement || ''));
+    }, []);
+
+    const toggleMaintenance = async () => {
+        const newState = !maintenance;
+        setMaintenance(newState);
+        try {
+            await updateMaintenanceMode(newState);
+        } catch (err) {
+            console.error("Failed to update maintenance mode");
+            setMaintenance(!newState); // revert
+        }
+    };
+
+    const saveAnnouncement = async () => {
+        setLoadingAnnounce(true);
+        try {
+            await updateAnnouncement(announcement);
+            alert("Announcement Updated!");
+        } catch (err) {
+            alert("Failed to update announcement");
+        } finally {
+            setLoadingAnnounce(false);
+        }
+    };
+
+    return (
+        <div className="settings-grid">
+            {/* Global Announcement */}
+            <div className="settings-card">
+                <div className="card-header header-amber">
+                    <div className="header-title-row">
+                        <Megaphone size={24} />
+                        <h2 className="header-title">Global Announcement</h2>
+                    </div>
+                    <p className="header-desc">
+                        Broadcast a message to all users on the platform.
                     </p>
                 </div>
-
-                <div style={{ padding: '2rem' }}>
-                    {message && (
-                        <div style={{
-                            padding: '1rem',
-                            borderRadius: '8px',
-                            marginBottom: '1.5rem',
-                            background: message.includes('success') ? '#f0fdf4' : '#fef2f2',
-                            color: message.includes('success') ? '#166534' : '#991b1b',
-                            border: `1px solid ${message.includes('success') ? '#bbf7d0' : '#fecaca'}`
-                        }}>
-                            {message}
-                        </div>
-                    )}
-
-                    <form onSubmit={handleInvite} style={{ display: 'grid', gap: '1.5rem' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: '500', color: '#475569' }}>Username</label>
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '1rem' }}
-                                placeholder="e.g. college_admin_1"
-                            />
-                        </div>
-
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: '500', color: '#475569' }}>Email Address</label>
-                            <div style={{ position: 'relative' }}>
-                                <Mail size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '1rem' }}
-                                    placeholder="admin@example.com"
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            style={{
-                                background: '#3b82f6',
-                                color: 'white',
-                                border: 'none',
-                                padding: '0.875rem',
-                                borderRadius: '6px',
-                                fontSize: '1rem',
-                                fontWeight: '500',
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.5rem',
-                                opacity: loading ? 0.7 : 1
-                            }}
-                        >
-                            {loading ? 'Creating...' : (
-                                <>
-                                    <UserPlus size={20} />
-                                    Create Admin User
-                                </>
-                            )}
-                        </button>
-                    </form>
+                <div className="card-body">
+                    <textarea
+                        className="form-textarea"
+                        value={announcement}
+                        onChange={(e) => setAnnouncement(e.target.value)}
+                        rows="3"
+                        style={{ marginBottom: '1.5rem', flex: 1 }}
+                        placeholder="e.g. Scheduled maintenance at 10 PM..."
+                    />
+                    <button onClick={saveAnnouncement} disabled={loadingAnnounce} className="btn btn-amber">
+                        {loadingAnnounce ? 'Saving...' : 'Update Announcement'}
+                    </button>
                 </div>
             </div>
+
+            {/* Maintenance Mode */}
+            <div className="settings-card">
+                <div className="card-header header-red">
+                    <div className="header-title-row">
+                        <AlertTriangle size={24} />
+                        <h2 className="header-title">Maintenance Mode</h2>
+                    </div>
+                    <p className="header-desc">
+                        Stop all non-admin traffic for updates.
+                    </p>
+                </div>
+                <div className="card-body">
+                    <div className="toggle-wrapper">
+                        <div>
+                            <span className={`system-status ${maintenance ? 'status-maintenance' : 'status-active'}`}>
+                                {maintenance ? '🔴 Maintenance ON' : '🟢 System Active'}
+                            </span>
+                        </div>
+
+                        <label className="toggle-label">
+                            <input
+                                type="checkbox"
+                                className="toggle-input"
+                                checked={maintenance}
+                                onChange={toggleMaintenance}
+                            />
+                            <span className="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <p style={{ marginTop: '1rem', color: '#64748b', fontSize: '0.9rem' }}>
+                        When active, users will see a "Under Maintenance" page.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- NEW COMPONENT: Audit Logs ---
+const AuditLogTable = () => {
+    const [logs, setLogs] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterAction, setFilterAction] = useState('ALL');
+
+    useEffect(() => {
+        getAuditLogs().then(res => setLogs(res.data)).catch(err => console.error(err));
+    }, []);
+
+    // Get unique actions for filter dropdown
+    const uniqueActions = ['ALL', ...new Set(logs.map(log => log.action))];
+
+    // Filter logic
+    const filteredLogs = logs.filter(log => {
+        const matchesSearch =
+            log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            log.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            log.action.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesFilter = filterAction === 'ALL' || log.action === filterAction;
+
+        return matchesSearch && matchesFilter;
+    });
+
+    return (
+        <div className="settings-card" style={{ marginTop: '2rem' }}>
+            <div className="card-header header-slate">
+                <div className="header-title-row">
+                    <Activity size={24} />
+                    <h2 className="header-title">System Activity Log</h2>
+                </div>
+            </div>
+
+            {/* Search and Filter Controls */}
+            <div style={{ padding: '1rem', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <input
+                    type="text"
+                    placeholder="Search logs..."
+                    className="form-input"
+                    style={{ flex: 1, minWidth: '200px' }}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <select
+                    className="form-input"
+                    style={{ width: 'auto', minWidth: '150px' }}
+                    value={filterAction}
+                    onChange={(e) => setFilterAction(e.target.value)}
+                >
+                    {uniqueActions.map(action => (
+                        <option key={action} value={action}>{action.replace('_', ' ')}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="audit-table-wrapper">
+                <table className="audit-table">
+                    <thead>
+                        <tr>
+                            <th style={{ width: '50px' }}>#</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredLogs.length > 0 ? (
+                            filteredLogs.map((log, index) => (
+                                <tr key={log.id}>
+                                    <td style={{ color: '#94a3b8', fontWeight: '500' }}>{index + 1}</td>
+                                    <td style={{ fontWeight: '500' }}>{log.user}</td>
+                                    <td className="audit-action">{log.action}</td>
+                                    <td>{log.details}</td>
+                                    <td className="audit-timestamp">
+                                        {new Date(log.timestamp).toLocaleString()}
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="5" className="empty-state">
+                                    No matching records found.
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+                {logs.length === 0 && <p className="empty-state">No activity recorded yet.</p>}
+            </div>
+        </div>
+    );
+};
+
+const SettingsComp = () => {
+    return (
+        <div className="settings-container">
+            <div className="settings-header">
+                <h1 className="settings-title">Settings & Configuration</h1>
+            </div>
+
+            <div className="settings-grid">
+                {/* Help Desk Section */}
+                <div className="settings-card">
+                    <div className="card-header header-indigo">
+                        <div className="header-title-row">
+                            <Send size={24} />
+                            <h2 className="header-title">Help Desk</h2>
+                        </div>
+                        <p className="header-desc">
+                            Contact the Super Admin for updates or support.
+                        </p>
+                    </div>
+
+                    <div className="card-body">
+                        <HelpDeskForm />
+                    </div>
+                </div>
+
+                {/* Change Password Section */}
+                <ChangePasswordForm />
+            </div>
+
+            {/* New Sections */}
+            <SystemControls />
+            <AuditLogTable />
+
         </div>
     );
 };

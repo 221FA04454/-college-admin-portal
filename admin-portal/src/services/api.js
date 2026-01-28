@@ -86,4 +86,21 @@ export const createAd = async (data) => api.post('ads/', data, {
 });
 export const deleteAd = async (id) => api.delete(`ads/${id}/`);
 
+export const sendHelpEmail = async (subject, message) => {
+    return api.post('send-help-email/', { subject, message });
+};
+
+// System Settings APIs
+export const getMaintenanceMode = async () => api.get('maintenance-mode/');
+export const updateMaintenanceMode = async (mode) => api.post('maintenance-mode/', { maintenance_mode: mode });
+
+export const getAnnouncement = async () => api.get('announcements/');
+export const updateAnnouncement = async (text) => api.post('announcements/', { announcement: text });
+
+export const getAuditLogs = async () => api.get('audit-logs/');
+
+export const changePassword = async (oldPassword, newPassword) => {
+    return api.post('change-password/', { old_password: oldPassword, new_password: newPassword });
+};
+
 export default api;
