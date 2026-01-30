@@ -20,7 +20,9 @@ from .api_views import (
     APIMaintenanceModeView,
     APIAnnouncementView,
     APIAuditLogView,
-    APIChangePasswordView
+    APIChangePasswordView,
+    APIForgotPasswordView,
+    APIResetPasswordView
 )
 
 urlpatterns = [
@@ -47,4 +49,6 @@ urlpatterns = [
     path('api/announcements/', APIAnnouncementView.as_view(), name='api_announcements'),
     path('api/audit-logs/', APIAuditLogView.as_view(), name='api_audit_logs'),
     path('api/change-password/', APIChangePasswordView.as_view(), name='api_change_password'),
+    path('api/forgot-password/', APIForgotPasswordView.as_view(), name='api_forgot_password'),
+    path('api/reset-password/', APIResetPasswordView.as_view(), name='api_reset_password'),
 ]

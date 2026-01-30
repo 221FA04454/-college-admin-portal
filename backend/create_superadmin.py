@@ -9,13 +9,14 @@ from accounts.models import User
 
 def create_superadmin():
     username = "superadmin"
-    email = "superadmin@example.com"
+    email = "sumanthofficial2626@gmail.com"
     password = "Admin123!"
 
     try:
         if User.objects.filter(username=username).exists():
             print(f"User {username} already exists. Updating password and permissions...")
             user = User.objects.get(username=username)
+            user.email = email
             user.set_password(password)
         else:
             print(f"Creating new superuser {username}...")

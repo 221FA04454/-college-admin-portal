@@ -133,6 +133,73 @@ class APIChangePasswordView(APIView):
 
         return Response({'status': 'SUCCESS', 'message': 'Password changed successfully'})
 
+class APIForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # We return success even if user not found to prevent email gathering, but for now specific error helps
+            return Response({'error': 'User with this email does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        code = user.generate_otp()
+        
+        # Send Email
+        try:
+            send_mail(
+                subject='Password Reset OTP - EduAdmin Portal',
+                message=f'Your OTP for password reset is: {code}',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Email failed: {e}")
+            return Response({'error': 'Failed to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'status': 'SUCCESS', 'message': 'OTP sent to your email'})
+
+class APIResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+
+        if not email or not otp or not new_password:
+            return Response({'error': 'Email, OTP and New Password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.verify_otp(otp):
+            user.set_password(new_password)
+            user.save()
+            
+            # Log this action
+            try:
+                AuditLog.objects.create(
+                    user=user,
+                    action="PASSWORD_RESET",
+                    details="User reset password via OTP",
+                    ip_address=get_client_ip(request)
+                )
+            except:
+                pass
+
+            return Response({'status': 'SUCCESS', 'message': 'Password reset successfully. You can now login.'})
+        
+        return Response({'error': 'Invalid or Expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return {

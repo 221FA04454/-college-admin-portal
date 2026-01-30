@@ -103,4 +103,12 @@ export const changePassword = async (oldPassword, newPassword) => {
     return api.post('change-password/', { old_password: oldPassword, new_password: newPassword });
 };
 
+export const forgotPassword = async (email) => {
+    return api.post('forgot-password/', { email });
+};
+
+export const resetPassword = async (email, otp, newPassword) => {
+    return api.post('reset-password/', { email, otp, new_password: newPassword });
+};
+
 export default api;

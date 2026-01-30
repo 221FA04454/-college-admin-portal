@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, verifyOtp, forceLogout } from '../../services/api';
+import { login, verifyOtp, forceLogout, forgotPassword, resetPassword } from '../../services/api';
 import './Login.css';
 
 const Login = () => {
-    const [step, setStep] = useState(1); // 1: Credentials, 2: OTP, 3: Conflict
+    const [step, setStep] = useState(1); // 1: Credentials, 2: OTP, 3: Conflict, 4: Forgot Email, 5: Forgot Reset
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [otp, setOtp] = useState('');
     const [error, setError] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
     const [loading, setLoading] = useState(false);
     const [conflictDetails, setConflictDetails] = useState(null);
+
+    // Forgot Password State
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetOtp, setResetOtp] = useState('');
+    const [newPassword, setNewPassword] = useState('');
 
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccessMsg('');
         setLoading(true);
 
         try {
@@ -81,6 +88,40 @@ const Login = () => {
         }
     };
 
+    // --- Forgot Password Handlers ---
+    const handleForgotSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            await forgotPassword(resetEmail);
+            setStep(5); // Move to Reset Step
+            setSuccessMsg('OTP sent to your email.');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to send OTP.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResetSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            await resetPassword(resetEmail, resetOtp, newPassword);
+            setStep(1); // Back to Login
+            setSuccessMsg('Password reset successfully! Please login.');
+            setResetEmail('');
+            setResetOtp('');
+            setNewPassword('');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Reset failed.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="login-container">
             <div className="login-card">
@@ -90,6 +131,7 @@ const Login = () => {
                 </div>
 
                 {error && <div className="error-message">{error}</div>}
+                {successMsg && <div className="success-message" style={{ background: '#f0fdf4', color: '#166534', padding: '10px', borderRadius: '5px', marginBottom: '10px', fontSize: '0.9rem' }}>{successMsg}</div>}
 
                 {step === 1 && (
                     <form onSubmit={handleLogin}>
@@ -111,6 +153,13 @@ const Login = () => {
                                 required
                             />
                         </div>
+
+                        <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+                            <button type="button" onClick={() => { setStep(4); setError(''); setSuccessMsg(''); }} style={{ background: 'none', border: 'none', color: '#4f46e5', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                Forgot Password?
+                            </button>
+                        </div>
+
                         <button type="submit" className="btn-login" disabled={loading}>
                             {loading ? 'Verifying...' : 'Login'}
                         </button>
@@ -166,6 +215,76 @@ const Login = () => {
                             Cancel
                         </button>
                     </div>
+                )}
+
+                {/* Step 4: Forgot Password - Email Input */}
+                {step === 4 && (
+                    <form onSubmit={handleForgotSubmit}>
+                        <div className="login-header" style={{ marginBottom: '1rem' }}>
+                            <h3 style={{ fontSize: '1.2rem', color: '#1e293b' }}>Reset Password</h3>
+                            <p style={{ fontSize: '0.9rem' }}>Enter your email to receive an OTP.</p>
+                        </div>
+                        <div className="form-group">
+                            <label>Email Address</label>
+                            <input
+                                type="email"
+                                value={resetEmail}
+                                onChange={(e) => setResetEmail(e.target.value)}
+                                required
+                                placeholder="admin@example.com"
+                            />
+                        </div>
+                        <button type="submit" className="btn-login" disabled={loading}>
+                            {loading ? 'Sending...' : 'Send OTP'}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn-link"
+                            onClick={() => { setStep(1); setError(''); }}
+                        >
+                            Back to Login
+                        </button>
+                    </form>
+                )}
+
+                {/* Step 5: Forgot Password - Verify & Update */}
+                {step === 5 && (
+                    <form onSubmit={handleResetSubmit}>
+                        <div className="otp-info">
+                            <p>Enter the OTP sent to <strong>{resetEmail}</strong> and your new password.</p>
+                        </div>
+                        <div className="form-group">
+                            <label>OTP Code</label>
+                            <input
+                                type="text"
+                                value={resetOtp}
+                                onChange={(e) => setResetOtp(e.target.value)}
+                                placeholder="XXXXXX"
+                                maxLength="6"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>New Password</label>
+                            <input
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                required
+                                minLength="6"
+                            />
+                        </div>
+                        <button type="submit" className="btn-login" disabled={loading}>
+                            {loading ? 'Resetting...' : 'Reset Password'}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn-link"
+                            onClick={() => setStep(4)}
+                        >
+                            Back
+                        </button>
+                    </form>
                 )}
             </div>
         </div>
