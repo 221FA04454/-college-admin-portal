@@ -5,3 +5,7 @@ db.sqlite3
 node_modules/
 .env
 .DS_Store
+
+*.zip
+backend/fix_duplicates.py
+backend/test_email.py

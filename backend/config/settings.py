@@ -170,7 +170,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'sumanthofficial2626@gmail.com'
 # ⚠️ ACTION REQUIRED: Replace this placeholder with your 16-char Google App Password
-EMAIL_HOST_PASSWORD = 'kjya neqz wljn etha' 
+EMAIL_HOST_PASSWORD = 'vxsp wcbf hqzu fpxy' 
 DEFAULT_FROM_EMAIL = 'sumanthofficial2626@gmail.com'
 
 # Console Backend (Disabled)
