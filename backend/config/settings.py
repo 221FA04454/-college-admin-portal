@@ -154,11 +154,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
-# Media Files (Uploads)
 # Media Files (Uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# MongoDB Configuration
+MONGODB_URI = "mongodb+srv://sumanthofficial2626_db_user:BLOkzz3XVpsSLjZT@admindb.6oxyutv.mongodb.net/?appName=Admindb"
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'

@@ -8,6 +8,7 @@ class College(models.Model):
     # Keeping the single brochure field for backward compatibility/simplicity if needed, 
     # but we will add a separate Brochure model for the 'list of brochures' feature.
     brochure = models.FileField(upload_to='brochures/', blank=True, null=True)
+    brochure_mongo_id = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     view_count = models.PositiveIntegerField(default=0)
 
@@ -16,7 +17,8 @@ class College(models.Model):
 
 class Brochure(models.Model):
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to='brochures_list/')
+    file = models.FileField(upload_to='brochures_list/', blank=True, null=True)
+    file_mongo_id = models.CharField(max_length=50, blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -55,7 +57,8 @@ class Student(models.Model):
 
 class AdContent(models.Model):
     title = models.CharField(max_length=255)
-    image = models.ImageField(upload_to='ads/')
+    image = models.ImageField(upload_to='ads/', blank=True, null=True)
+    image_mongo_id = models.CharField(max_length=50, blank=True, null=True)
     link = models.URLField(blank=True, null=True)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
