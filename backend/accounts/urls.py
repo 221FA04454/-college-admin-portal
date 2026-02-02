@@ -7,7 +7,9 @@ from .views import (
     PasswordResetRequiredView,
     session_conflict_view,
     force_logout_view,
-    logout_view
+    logout_view,
+    ForgotPasswordView,
+    ResetPasswordView
 )
 from .api_views import (
     APILoginView,
@@ -36,6 +38,8 @@ urlpatterns = [
     path('session-conflict/', session_conflict_view, name='session_conflict'),
     path('force-logout/', force_logout_view, name='force_logout'),
     path('logout/', logout_view, name='logout'),
+    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
+    path('reset-password/', ResetPasswordView.as_view(), name='reset_password'),
 
     # JSON API Endpoints (For React Admin)
     path('api/login/', APILoginView.as_view(), name='api_login'),

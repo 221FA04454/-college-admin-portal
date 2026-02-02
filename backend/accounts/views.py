@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.conf import settings
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -183,4 +185,81 @@ def logout_view(request):
     except:
         pass
     logout(request)
+    logout(request)
     return redirect('login')
+
+class ForgotPasswordView(View):
+    def get(self, request):
+        form = PasswordResetForm()
+        return render(request, 'accounts/forgot_password.html', {'form': form})
+
+    def post(self, request):
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                # Security: Don't reveal if user exists
+                messages.success(request, 'If an account exists with this email, an OTP has been sent.')
+                return redirect('login') # Or stay on page
+            
+            # Generate and Send OTP
+            code = user.generate_otp()
+            try:
+                send_mail(
+                    subject='Password Reset OTP - EduAdmin Portal',
+                    message=f'Your OTP for password reset is: {code}',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                # Store email in session for the next step
+                request.session['reset_email'] = email
+                messages.success(request, 'OTP sent to your email.')
+                return redirect('reset_password')
+            except Exception as e:
+                messages.error(request, 'Failed to send email. Please try again.')
+        
+        return render(request, 'accounts/forgot_password.html', {'form': form})
+
+class ResetPasswordView(View):
+    def get(self, request):
+        email = request.session.get('reset_email')
+        if not email:
+            messages.error(request, 'Session expired. Please start over.')
+            return redirect('forgot_password')
+        return render(request, 'accounts/reset_password.html', {'email': email})
+
+    def post(self, request):
+        email = request.session.get('reset_email')
+        if not email:
+            messages.error(request, 'Session expired. Please start over.')
+            return redirect('forgot_password')
+
+        otp = request.POST.get('otp')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if new_password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'accounts/reset_password.html', {'email': email})
+
+        try:
+            user = User.objects.get(email=email)
+            if user.verify_otp(otp):
+                user.set_password(new_password)
+                user.save()
+                
+                # Cleanup session
+                del request.session['reset_email']
+                
+                messages.success(request, 'Password reset successfully. Please login.')
+                return redirect('login')
+            else:
+                messages.error(request, 'Invalid or expired OTP.')
+        except User.DoesNotExist:
+             messages.error(request, 'User not found.')
+
+        return render(request, 'accounts/reset_password.html', {'email': email})
+

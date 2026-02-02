@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Send, Megaphone, AlertTriangle, Activity, Key } from 'lucide-react'; // Added icons
-import { sendHelpEmail, getMaintenanceMode, updateMaintenanceMode, getAnnouncement, updateAnnouncement, getAuditLogs, changePassword } from '../../services/api';
+import { sendHelpEmail, getAnnouncement, updateAnnouncement, getAuditLogs, changePassword } from '../../services/api';
 import api from '../../services/api';
 import './Settings.css';
 
@@ -172,25 +172,12 @@ const HelpDeskForm = () => {
 
 // --- NEW COMPONENT: System Controls ---
 const SystemControls = () => {
-    const [maintenance, setMaintenance] = useState(false);
     const [announcement, setAnnouncement] = useState('');
     const [loadingAnnounce, setLoadingAnnounce] = useState(false);
 
     useEffect(() => {
-        getMaintenanceMode().then(res => setMaintenance(res.data.maintenance_mode));
         getAnnouncement().then(res => setAnnouncement(res.data.global_announcement || ''));
     }, []);
-
-    const toggleMaintenance = async () => {
-        const newState = !maintenance;
-        setMaintenance(newState);
-        try {
-            await updateMaintenanceMode(newState);
-        } catch (err) {
-            console.error("Failed to update maintenance mode");
-            setMaintenance(!newState); // revert
-        }
-    };
 
     const saveAnnouncement = async () => {
         setLoadingAnnounce(true);
@@ -229,41 +216,6 @@ const SystemControls = () => {
                     <button onClick={saveAnnouncement} disabled={loadingAnnounce} className="btn btn-amber">
                         {loadingAnnounce ? 'Saving...' : 'Update Announcement'}
                     </button>
-                </div>
-            </div>
-
-            {/* Maintenance Mode */}
-            <div className="settings-card">
-                <div className="card-header header-red">
-                    <div className="header-title-row">
-                        <AlertTriangle size={24} />
-                        <h2 className="header-title">Maintenance Mode</h2>
-                    </div>
-                    <p className="header-desc">
-                        Stop all non-admin traffic for updates.
-                    </p>
-                </div>
-                <div className="card-body">
-                    <div className="toggle-wrapper">
-                        <div>
-                            <span className={`system-status ${maintenance ? 'status-maintenance' : 'status-active'}`}>
-                                {maintenance ? '🔴 Maintenance ON' : '🟢 System Active'}
-                            </span>
-                        </div>
-
-                        <label className="toggle-label">
-                            <input
-                                type="checkbox"
-                                className="toggle-input"
-                                checked={maintenance}
-                                onChange={toggleMaintenance}
-                            />
-                            <span className="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <p style={{ marginTop: '1rem', color: '#64748b', fontSize: '0.9rem' }}>
-                        When active, users will see a "Under Maintenance" page.
-                    </p>
                 </div>
             </div>
         </div>

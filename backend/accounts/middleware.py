@@ -38,3 +38,56 @@ class SingleSessionMiddleware:
                 
         response = self.get_response(request)
         return response
+
+class MaintenanceMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        from .models import SystemSettings
+        from django.urls import reverse
+        from django.shortcuts import render
+        from rest_framework_simplejwt.authentication import JWTAuthentication
+        
+        # Check if Maintenance Mode is ON
+        try:
+            settings_obj = SystemSettings.load()
+            if settings_obj.maintenance_mode:
+                path = request.path
+                
+                # 1. ALWAYS Allow these paths
+                if (
+                    path.startswith('/admin/') or 
+                    path.startswith('/static/') or 
+                    path.startswith('/media/') or
+                    path == reverse('login') or
+                    path.startswith('/api/login/') or
+                    path.startswith('/api/verify-otp/') or
+                    path.startswith('/api/maintenance-mode/') # CRITICAL: Allow toggling it off
+                ):
+                    return self.get_response(request)
+
+                # 2. Check Standard Django Session Auth (Browser Admin)
+                if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+                    return self.get_response(request)
+
+                # 3. Check JWT Auth (React Admin)
+                if path.startswith('/api/'):
+                    try:
+                        jwt_auth = JWTAuthentication()
+                        auth_result = jwt_auth.authenticate(request)
+                        if auth_result is not None:
+                            user, token = auth_result
+                            if user.is_staff or user.role in ['super_admin', 'admin']:
+                                request.user = user # Attach user for the view
+                                return self.get_response(request)
+                    except Exception as e:
+                        pass # Token invalid or missing
+
+                # Block everything else
+                return render(request, 'maintenance.html', status=503)
+        except Exception:
+            pass
+
+        response = self.get_response(request)
+        return response
